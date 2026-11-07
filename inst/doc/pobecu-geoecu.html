@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Mapas de población con geoecu</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Mapas de población con geoecu</h1>
+
+
+
+<p>pobecu y <a href="https://github.com/f-slg/geoecu">geoecu</a> usan
+<strong>los códigos DPA</strong>. geoecu aporta los límites de
+provincias, cantones y parroquias, y pobecu la población. Con
+<code>pob_mapa()</code> obtienes en una sola línea la capa
+<code>sf</code> con la población y la densidad, lista para
+<code>ggplot2</code> o <code>plot()</code>.</p>
+<blockquote>
+<p>Esta viñeta necesita los paquetes geoecu y ggplot2 con las capas de
+geoecu descargadas, así que su código no se ejecutó al construirla.</p>
+</blockquote>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(pobecu)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+<div id="dos-divisiones-territoriales" class="section level2">
+<h2>Dos divisiones territoriales</h2>
+<p>La población de pobecu usa las unidades del <strong>Censo
+2022</strong>: 221 cantones y 1042 parroquias (las proyecciones del INEC
+no tienen otras). geoecu, desde la versión 0.4.0, usa la
+<strong>Organización Territorial del Estado del CONALI (2026)</strong>,
+que es más reciente: 223 cantones y 1048 parroquias, más 3 zonas en
+estudio. Las diferencias son pocas, pero importan en un mapa:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>CONALI 2026 (geoecu)</th>
+<th>Censo 2022 (pobecu)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cantón Borbón (<code>0809</code>) y sus 12 parroquias</td>
+<td>Parte de Eloy Alfaro (<code>0802</code>)</td>
+</tr>
+<tr class="even">
+<td>Cantón Sevilla Don Bosco (<code>1413</code>, cabecera
+<code>141350</code>)</td>
+<td>Parroquia rural de Morona (<code>140157</code>)</td>
+</tr>
+<tr class="odd">
+<td>Bella Vista (<code>200351</code>)</td>
+<td>Bella Vista (<code>200353</code>)</td>
+</tr>
+<tr class="even">
+<td>Sosote (<code>131251</code>)</td>
+<td>Dentro de Rocafuerte (<code>131250</code>)</td>
+</tr>
+<tr class="odd">
+<td>Shuar Pastaza (<code>160167</code>)</td>
+<td>Dentro de Simón Bolívar (<code>160162</code>)</td>
+</tr>
+<tr class="even">
+<td>Juan Montalvo (<code>170257</code>)</td>
+<td>Dentro de Cayambe (<code>170250</code>)</td>
+</tr>
+<tr class="odd">
+<td>La Magdalena, La Primavera, Miss Ecuador (<code>210456</code> a
+<code>210458</code>)</td>
+<td>Dentro de Shushufindi (<code>210450</code>)</td>
+</tr>
+<tr class="even">
+<td>Zonas en estudio (<code>139090</code>, <code>140190</code>,
+<code>900651</code>)</td>
+<td>Sin población propia</td>
+</tr>
+</tbody>
+</table>
+<p><code>pob_mapa()</code> convierte la capa a las unidades del censo
+con <code>agrupar_unidades()</code> antes de unirla, así que cada cifra
+se dibuja sobre el territorio que le corresponde. Si dibujaras la
+población de Eloy Alfaro solo sobre el polígono que hoy tiene ese cantón
+(465 km² de los 4480 que tenía en el censo), su densidad saldría casi
+diez veces más alta.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>esmeraldas <span class="ot">&lt;-</span> geoecu<span class="sc">::</span><span class="fu">read_cantones</span>(<span class="at">provincia =</span> <span class="st">&quot;Esmeraldas&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">nrow</span>(esmeraldas)                    <span class="co"># cantones en geoecu</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">nrow</span>(<span class="fu">agrupar_unidades</span>(esmeraldas))  <span class="co"># cantones del censo</span></span></code></pre></div>
+</div>
+<div id="densidad-cantonal" class="section level2">
+<h2>Densidad cantonal</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>cant <span class="ot">&lt;-</span> <span class="fu">pob_mapa</span>(<span class="st">&quot;canton&quot;</span>, <span class="at">anio =</span> <span class="dv">2025</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>cant <span class="ot">&lt;-</span> geoecu<span class="sc">::</span><span class="fu">reubicar_galapagos</span>(cant)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">ggplot</span>(cant) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> densidad), <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">trans =</span> <span class="st">&quot;log10&quot;</span>, <span class="at">name =</span> <span class="st">&quot;hab/km²&quot;</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                       <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_number</span>(<span class="at">big.mark =</span> <span class="st">&quot; &quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Densidad de población por cantón, 2025&quot;</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">&quot;Fuente: INEC, Revisión 2024; límites: geoecu (CONALI)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code></pre></div>
+</div>
+<div id="parroquias" class="section level2">
+<h2>Parroquias</h2>
+<p>Las cabeceras cantonales (código terminado en <code>50</code>)
+incluyen a todas las parroquias urbanas del cantón, igual en el censo
+que en geoecu 0.4.0. Con geoecu 0.3.0 y anteriores, que dibujaban las
+parroquias urbanas por separado (por ejemplo, las 15 de Cuenca),
+<code>pob_mapa(&quot;parroquia&quot;)</code> las fusiona en su cabecera.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>cuenca <span class="ot">&lt;-</span> <span class="fu">pob_mapa</span>(<span class="st">&quot;parroquia&quot;</span>, <span class="at">anio =</span> <span class="dv">2030</span>, <span class="at">canton =</span> <span class="st">&quot;Cuenca&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">ggplot</span>(cuenca) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> poblacion), <span class="at">color =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="fu">scale_fill_gradient</span>(<span class="at">low =</span> <span class="st">&quot;#FFF4D2&quot;</span>, <span class="at">high =</span> <span class="st">&quot;#8C3B12&quot;</span>, <span class="at">name =</span> <span class="st">&quot;habitantes&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>                      <span class="at">trans =</span> <span class="st">&quot;log10&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Cuenca: población parroquial estimada, 2030&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code></pre></div>
+</div>
+<div id="tasas-en-el-mapa" class="section level2">
+<h2>Tasas en el mapa</h2>
+<p>Para mapear una tasa, calcúlala con <code>pob_tasa()</code> y únela a
+la capa con <code>geoecu::geoecu_unir()</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>casos <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">dpa_canton =</span> <span class="fu">c</span>(<span class="st">&quot;1101&quot;</span>, <span class="st">&quot;1102&quot;</span>, <span class="st">&quot;1103&quot;</span>, <span class="st">&quot;1104&quot;</span>, <span class="st">&quot;1110&quot;</span>),</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>                    <span class="at">anio =</span> <span class="dv">2025</span>, <span class="at">casos =</span> <span class="fu">c</span>(<span class="dv">130</span>, <span class="dv">12</span>, <span class="dv">25</span>, <span class="dv">9</span>, <span class="dv">6</span>))</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>tasas <span class="ot">&lt;-</span> <span class="fu">pob_tasa</span>(casos, <span class="st">&quot;casos&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>loja <span class="ot">&lt;-</span> geoecu<span class="sc">::</span><span class="fu">geoecu_unir</span>(tasas, <span class="at">codigo =</span> <span class="st">&quot;dpa_canton&quot;</span>, <span class="at">nivel =</span> <span class="st">&quot;canton&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                            <span class="at">provincia =</span> <span class="st">&quot;Loja&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">ggplot</span>(loja) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> tasa), <span class="at">color =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="fu">scale_fill_distiller</span>(<span class="at">palette =</span> <span class="st">&quot;OrRd&quot;</span>, <span class="at">direction =</span> <span class="dv">1</span>, <span class="at">na.value =</span> <span class="st">&quot;grey90&quot;</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>                       <span class="at">name =</span> <span class="st">&quot;por 100 000&quot;</span>) <span class="sc">+</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Tasa por 100 000 habitantes (datos de ejemplo)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code></pre></div>
+<p>Si tus casos usan los códigos de geoecu 0.4.0 (CONALI 2026) o de
+parroquias urbanas, conviértelos a las unidades del censo con
+<code>homologar_canton()</code> o <code>homologar_parroquia()</code> y
+agrégalos antes de calcular la tasa. Después, para mapearla, usa la capa
+convertida con <code>agrupar_unidades()</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>casos_e <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">dpa_canton =</span> <span class="fu">c</span>(<span class="st">&quot;0802&quot;</span>, <span class="st">&quot;0809&quot;</span>, <span class="st">&quot;0801&quot;</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>                      <span class="at">anio =</span> <span class="dv">2025</span>, <span class="at">casos =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">5</span>, <span class="dv">30</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>casos_e<span class="sc">$</span>dpa_canton <span class="ot">&lt;-</span> <span class="fu">homologar_canton</span>(casos_e<span class="sc">$</span>dpa_canton)  <span class="co"># Borbón -&gt; Eloy Alfaro</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>casos_e <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(casos <span class="sc">~</span> dpa_canton <span class="sc">+</span> anio, casos_e, sum)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>tasas_e <span class="ot">&lt;-</span> <span class="fu">pob_tasa</span>(casos_e, <span class="st">&quot;casos&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>capa <span class="ot">&lt;-</span> <span class="fu">agrupar_unidades</span>(geoecu<span class="sc">::</span><span class="fu">read_cantones</span>(<span class="at">provincia =</span> <span class="st">&quot;Esmeraldas&quot;</span>))</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>mapa_e <span class="ot">&lt;-</span> <span class="fu">merge</span>(capa, tasas_e[, <span class="fu">c</span>(<span class="st">&quot;dpa_canton&quot;</span>, <span class="st">&quot;tasa&quot;</span>)], <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>casos_p <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">dpa_parroq =</span> <span class="fu">c</span>(<span class="st">&quot;131250&quot;</span>, <span class="st">&quot;131251&quot;</span>, <span class="st">&quot;131252&quot;</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>                      <span class="at">anio =</span> <span class="dv">2025</span>, <span class="at">casos =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>))</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>casos_p<span class="sc">$</span>dpa_parroq <span class="ot">&lt;-</span> <span class="fu">homologar_parroquia</span>(casos_p<span class="sc">$</span>dpa_parroq)  <span class="co"># Sosote -&gt; Rocafuerte</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>casos_p <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(casos <span class="sc">~</span> dpa_parroq <span class="sc">+</span> anio, casos_p, sum)</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="fu">pob_tasa</span>(casos_p, <span class="st">&quot;casos&quot;</span>, <span class="at">nivel =</span> <span class="st">&quot;parroquia&quot;</span>)</span></code></pre></div>
+</div>
+<div id="varias-desagregaciones-un-mapa-por-grupo" class="section level2">
+<h2>Varias desagregaciones: un mapa por grupo</h2>
+<p>Con sexo, edad o varios años, cada polígono se repite una vez por
+combinación, lo que permite usar <code>facet_wrap()</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>mayores <span class="ot">&lt;-</span> <span class="fu">pob_mapa</span>(<span class="st">&quot;provincia&quot;</span>, <span class="at">anio =</span> <span class="fu">c</span>(<span class="dv">2025</span>, <span class="dv">2035</span>), <span class="at">edad =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">65</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>mayores <span class="ot">&lt;-</span> geoecu<span class="sc">::</span><span class="fu">reubicar_galapagos</span>(mayores[mayores<span class="sc">$</span>edad <span class="sc">==</span> <span class="st">&quot;65+&quot;</span>, ])</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="fu">ggplot</span>(mayores) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> poblacion <span class="sc">/</span> <span class="dv">1000</span>), <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>anio) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">name =</span> <span class="st">&quot;miles&quot;</span>, <span class="at">option =</span> <span class="st">&quot;magma&quot;</span>, <span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Población de 65 años y más por provincia&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code></pre></div>
+</div>
+<div id="zonas-en-estudio" class="section level2">
+<h2>Zonas en estudio</h2>
+<p>Las capas de geoecu incluyen tres zonas en estudio, territorios con
+límites aún no resueltos, para que el mapa nacional no tenga huecos. No
+tienen población propia en pobecu, así que <code>pob_mapa()</code> las
+devuelve con <code>poblacion = NA</code>; <code>ggplot2</code> las
+dibuja con el color de <code>na.value</code>.</p>
+<p>Con geoecu 0.3.0, la capa parroquial no tenía el polígono de Puerto
+Ayora (<code>200350</code>) y <code>pob_mapa(&quot;parroquia&quot;)</code> lo
+avisaba; geoecu 0.4.0 ya lo incluye.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

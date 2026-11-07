@@ -1,0 +1,166 @@
+---
+title: "Mapas de población con geoecu"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mapas de población con geoecu}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+disponible <- requireNamespace("geoecu", quietly = TRUE) &&
+  requireNamespace("ggplot2", quietly = TRUE) &&
+  geoecu::geoecu_datos_disponibles()
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 5, dpi = 96, eval = disponible)
+```
+
+pobecu y [geoecu](https://github.com/f-slg/geoecu) usan **los códigos DPA**.
+geoecu aporta los límites de provincias, cantones y parroquias, y pobecu la
+población. Con `pob_mapa()` obtienes en una sola línea la capa `sf` con la
+población y la densidad, lista para `ggplot2` o `plot()`.
+
+```{r, eval = !disponible, echo = FALSE, results = "asis"}
+cat("> Esta viñeta necesita los paquetes geoecu y ggplot2 con las capas de",
+    "geoecu descargadas, así que su código no se ejecutó al construirla.\n")
+```
+
+```{r}
+library(pobecu)
+library(ggplot2)
+```
+
+## Dos divisiones territoriales
+
+La población de pobecu usa las unidades del **Censo 2022**: 221 cantones y
+1042 parroquias (las proyecciones del INEC no tienen otras). geoecu, desde la
+versión 0.4.0, usa la **Organización Territorial del Estado del CONALI
+(2026)**, que es más reciente: 223 cantones y 1048 parroquias, más 3 zonas en
+estudio. Las diferencias son pocas, pero importan en un mapa:
+
+| CONALI 2026 (geoecu) | Censo 2022 (pobecu) |
+|---|---|
+| Cantón Borbón (`0809`) y sus 12 parroquias | Parte de Eloy Alfaro (`0802`) |
+| Cantón Sevilla Don Bosco (`1413`, cabecera `141350`) | Parroquia rural de Morona (`140157`) |
+| Bella Vista (`200351`) | Bella Vista (`200353`) |
+| Sosote (`131251`) | Dentro de Rocafuerte (`131250`) |
+| Shuar Pastaza (`160167`) | Dentro de Simón Bolívar (`160162`) |
+| Juan Montalvo (`170257`) | Dentro de Cayambe (`170250`) |
+| La Magdalena, La Primavera, Miss Ecuador (`210456` a `210458`) | Dentro de Shushufindi (`210450`) |
+| Zonas en estudio (`139090`, `140190`, `900651`) | Sin población propia |
+
+`pob_mapa()` convierte la capa a las unidades del censo con
+`agrupar_unidades()` antes de unirla, así que cada cifra se dibuja sobre el
+territorio que le corresponde. Si dibujaras la población de Eloy Alfaro solo
+sobre el polígono que hoy tiene ese cantón (465 km² de los 4480 que tenía en
+el censo), su densidad saldría casi diez veces más alta.
+
+```{r}
+esmeraldas <- geoecu::read_cantones(provincia = "Esmeraldas")
+nrow(esmeraldas)                    # cantones en geoecu
+nrow(agrupar_unidades(esmeraldas))  # cantones del censo
+```
+
+## Densidad cantonal
+
+```{r}
+cant <- pob_mapa("canton", anio = 2025)
+cant <- geoecu::reubicar_galapagos(cant)
+
+ggplot(cant) +
+  geom_sf(aes(fill = densidad), color = "white", linewidth = 0.1) +
+  scale_fill_viridis_c(trans = "log10", name = "hab/km²",
+                       labels = scales::label_number(big.mark = " ")) +
+  labs(title = "Densidad de población por cantón, 2025",
+       caption = "Fuente: INEC, Revisión 2024; límites: geoecu (CONALI)") +
+  theme_void()
+```
+
+## Parroquias
+
+Las cabeceras cantonales (código terminado en `50`) incluyen a todas las
+parroquias urbanas del cantón, igual en el censo que en geoecu 0.4.0. Con
+geoecu 0.3.0 y anteriores, que dibujaban las parroquias urbanas por
+separado (por ejemplo, las 15 de Cuenca), `pob_mapa("parroquia")` las
+fusiona en su cabecera.
+
+```{r}
+cuenca <- pob_mapa("parroquia", anio = 2030, canton = "Cuenca")
+
+ggplot(cuenca) +
+  geom_sf(aes(fill = poblacion), color = "white") +
+  scale_fill_gradient(low = "#FFF4D2", high = "#8C3B12", name = "habitantes",
+                      trans = "log10") +
+  labs(title = "Cuenca: población parroquial estimada, 2030") +
+  theme_void()
+```
+
+## Tasas en el mapa
+
+Para mapear una tasa, calcúlala con `pob_tasa()` y únela a la capa con
+`geoecu::geoecu_unir()`:
+
+```{r}
+casos <- data.frame(dpa_canton = c("1101", "1102", "1103", "1104", "1110"),
+                    anio = 2025, casos = c(130, 12, 25, 9, 6))
+tasas <- pob_tasa(casos, "casos")
+loja <- geoecu::geoecu_unir(tasas, codigo = "dpa_canton", nivel = "canton",
+                            provincia = "Loja")
+
+ggplot(loja) +
+  geom_sf(aes(fill = tasa), color = "white") +
+  scale_fill_distiller(palette = "OrRd", direction = 1, na.value = "grey90",
+                       name = "por 100 000") +
+  labs(title = "Tasa por 100 000 habitantes (datos de ejemplo)") +
+  theme_void()
+```
+
+Si tus casos usan los códigos de geoecu 0.4.0 (CONALI 2026) o de
+parroquias urbanas, conviértelos a las unidades del censo con
+`homologar_canton()` o `homologar_parroquia()` y agrégalos antes de calcular
+la tasa. Después, para mapearla, usa la capa convertida con
+`agrupar_unidades()`:
+
+```{r}
+casos_e <- data.frame(dpa_canton = c("0802", "0809", "0801"),
+                      anio = 2025, casos = c(7, 5, 30))
+casos_e$dpa_canton <- homologar_canton(casos_e$dpa_canton)  # Borbón -> Eloy Alfaro
+casos_e <- aggregate(casos ~ dpa_canton + anio, casos_e, sum)
+tasas_e <- pob_tasa(casos_e, "casos")
+
+capa <- agrupar_unidades(geoecu::read_cantones(provincia = "Esmeraldas"))
+mapa_e <- merge(capa, tasas_e[, c("dpa_canton", "tasa")], all.x = TRUE)
+
+casos_p <- data.frame(dpa_parroq = c("131250", "131251", "131252"),
+                      anio = 2025, casos = c(4, 2, 1))
+casos_p$dpa_parroq <- homologar_parroquia(casos_p$dpa_parroq)  # Sosote -> Rocafuerte
+casos_p <- aggregate(casos ~ dpa_parroq + anio, casos_p, sum)
+pob_tasa(casos_p, "casos", nivel = "parroquia")
+```
+
+## Varias desagregaciones: un mapa por grupo
+
+Con sexo, edad o varios años, cada polígono se repite una vez por
+combinación, lo que permite usar `facet_wrap()`:
+
+```{r, fig.height = 4}
+mayores <- pob_mapa("provincia", anio = c(2025, 2035), edad = c(0, 65))
+mayores <- geoecu::reubicar_galapagos(mayores[mayores$edad == "65+", ])
+
+ggplot(mayores) +
+  geom_sf(aes(fill = poblacion / 1000), color = "white", linewidth = 0.2) +
+  facet_wrap(~anio) +
+  scale_fill_viridis_c(name = "miles", option = "magma", direction = -1) +
+  labs(title = "Población de 65 años y más por provincia") +
+  theme_void()
+```
+
+## Zonas en estudio
+
+Las capas de geoecu incluyen tres zonas en estudio, territorios con límites
+aún no resueltos, para que el mapa nacional no tenga huecos. No tienen
+población propia en pobecu, así que `pob_mapa()` las devuelve con
+`poblacion = NA`; `ggplot2` las dibuja con el color de `na.value`.
+
+Con geoecu 0.3.0, la capa parroquial no tenía el polígono de Puerto Ayora
+(`200350`) y `pob_mapa("parroquia")` lo avisaba; geoecu 0.4.0 ya lo incluye.
