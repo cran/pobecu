@@ -2,7 +2,7 @@ Package: pobecu
 Type: Package
 Title: Population of Ecuador by Province, Canton and Parish (Población
         del Ecuador por Provincia, Cantón y Parroquia)
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     person("Ronald Fabricio", "Salas Guerrero",
            email = "fabriciosalasguerrero@gmail.com",
@@ -25,13 +25,15 @@ Description: Provides the official population estimates and projections of
     (CONALI, "Comité Nacional de Límites Internos") to census units, and
     native integration with the 'geoecu' package to map population on the
     boundaries of provinces, cantons and parishes. Documentation is in
-    Spanish.
+    Spanish. Includes conditional territorial population scenarios for
+    1900-2100 using structural time series, damped extrapolation and
+    hierarchical compositional allocation with Monte Carlo bands.
 License: MIT + file LICENSE
 URL: https://f-slg.github.io/pobecu/, https://github.com/f-slg/pobecu
 BugReports: https://github.com/f-slg/pobecu/issues
 Depends: R (>= 4.1.0)
 Imports: stats, tools, utils
-Suggests: geoecu (>= 0.3.0), ggplot2, knitr, rmarkdown, scales, sf,
+Suggests: geoecu (>= 0.4.1), ggplot2, knitr, rmarkdown, scales, sf,
         testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
@@ -41,8 +43,8 @@ LazyData: true
 LazyDataCompression: xz
 Config/roxygen2/version: 8.1.1
 NeedsCompilation: no
-Packaged: 2026-10-23 21:09:27 UTC; fabriciosalas
+Packaged: 2026-11-07 19:51:32 UTC; fabriciosalas
 Author: Ronald Fabricio Salas Guerrero [aut, cre, cph]
 Maintainer: Ronald Fabricio Salas Guerrero <fabriciosalasguerrero@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-11-07 16:30:13 UTC
+Date/Publication: 2026-11-07 22:20:08 UTC
